@@ -27,10 +27,10 @@ Agent::Agent(unsigned long const start_time, unsigned long const end_time, unsig
 
 void Agent::Body() {
   //spdlog::debug("Agent thread is up");
-
   while (GetLVT() < end_time_) {
     spdlog::debug("Cycle begin");
     Cycle();
+    this->attached_alp_->RecordAgentLvtHistory(this->agent_id());
   }
   spdlog::debug("Agent {0} exit, LVT {1}, GVT {2}", this->agent_id(), this->GetLVT(), this->GetGVT());
   spdlog::debug("LVT >= EndTime, agent exit, id={0}", this->agent_id());
@@ -40,9 +40,11 @@ void Agent::Body() {
     }
     sleep(1);
     SendGVTMessage(); // Initiate GVT calculation to get ready for termination
-    spdlog::info("Agent {} finsihed, GVT {}, LVT {}, ALP LVT {}", this->agent_id(), this->GetGVT(), this->GetLVT(),
+    spdlog::info("Agent {} finsihed, waiting for GVT,  GVT {}, LVT {}, ALP LVT {}", this->agent_id(), this->GetGVT(),
+                 this->GetLVT(),
                  this->GetAlpLVT());
   }
+  spdlog::info("Agent {} reached target GVT, exit", this->agent_id());
 
 
 }

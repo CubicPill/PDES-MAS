@@ -363,9 +363,8 @@ void Clp::ProcessMessage(const SingleReadMessage *pSingleReadMessage) {
   LOG(logFINEST) << "Clp::ProcessMessage(SingleReadMessage)(" << GetRank()
                  << ")# SendReadMessageAndGetResponse SSV from message: " << *pSingleReadMessage;
   if (pSingleReadMessage->GetTimestamp() < fGVT) {
-    spdlog::critical("Clp::ProcessMessage(SingleReadMessage): Message timestamp less that GVT, {}<{}",
+    spdlog::critical("Clp::ProcessMessage(SingleReadMessage): Message timestamp less than GVT, {}<{}",
                      pSingleReadMessage->GetTimestamp(), fGVT);
-    return;
     exit(1);
   }
   AbstractValue *value = fSharedState.Read(pSingleReadMessage->GetSsvId(),
@@ -668,7 +667,7 @@ void Clp::MigrateStateVariables(
       fSharedState.RemoveWritePeriodList(*ssvIdListIterator, rollbackList);
       // Delete the SSV from the shared state
       fSharedState.Delete(*ssvIdListIterator);
-      // Send rollbacls if necessary
+      // Send rollbacks if necessary
       if (rollbackList.GetSize() > 0) {
         RollbackTag rbTag(*ssvIdListIterator, ULONG_MAX, ROLLBACK_BY_SM);
         LOG(logFINEST) << "Sending rollbacks after state migration";
@@ -705,16 +704,16 @@ void Clp::ProcessMessage(const RangeQueryMessage *pRangeQueryMessage) {
   newRangeQueryMessage->IncrementNumberOfTraverseHops();
   // If this CLP hasn't been seen before
   if (!(fRangeTracker->HasEntry(newRangeQueryMessage->GetIdentifier()))) {
-    spdlog::debug("clp {}, RQ hasn't been seen before", this->GetRank());
+    //spdlog::debug("clp {}, RQ hasn't been seen before", this->GetRank());
     for (int i = 0; i < DIRECTION_SIZE; ++i) {
       if (fRangeRoutingTable[i]) {
         Range *r = fRangeRoutingTable[i]->GetRangeCopy(fStartTime);
-        if (r) {
-          spdlog::debug("clp {0}, direction {1}: ({2},{3})-({4},{5})",
-                        this->GetRank(), i,
-                        r->GetMinRangeValue().GetX(), r->GetMinRangeValue().GetY(),
-                        r->GetMaxRangeValue().GetX(), r->GetMaxRangeValue().GetY());
-        }
+//        if (r) {
+//          spdlog::debug("clp {0}, direction {1}: ({2},{3})-({4},{5})",
+//                        this->GetRank(), i,
+//                        r->GetMinRangeValue().GetX(), r->GetMinRangeValue().GetY(),
+//                        r->GetMaxRangeValue().GetX(), r->GetMaxRangeValue().GetY());
+//        }
 
         delete r;
       }
@@ -841,7 +840,7 @@ void Clp::ProcessMessage(const RangeQueryMessage *pRangeQueryMessage) {
     rangeQueryResponse->SetDestination(
         fRouter->GetLpRankByDirection(
             fRangeTracker->DeleteEntry(newRangeQueryMessage->GetIdentifier())));
-    spdlog::debug("clp {0}, rq response size: {1}", this->GetRank(), rangeQueryResponse->GetSsvValueList().size());
+    //spdlog::debug("clp {0}, rq response size: {1}", this->GetRank(), rangeQueryResponse->GetSsvValueList().size());
     rangeQueryResponse->SendToLp(this);
   }
   delete newRangeQueryMessage;
@@ -1021,10 +1020,10 @@ void Clp::InitialisePortRanges(const Initialisor *pInitialisor) {
   for (int i = 0; i < DIRECTION_SIZE; ++i) {
     fRangeRoutingTable[i]->InsertRangePeriod(fStartTime,
                                              RangePeriod(fStartTime, PortRange[i]));
-    if (PortRange[i])
-      spdlog::debug("Insert to rrt: rank {0}, direction {1}, ({2},{3})-({4},{5})", this->GetRank(),
-                    i, PortRange[i]->GetMinRangeValue().GetX(), PortRange[i]->GetMinRangeValue().GetY(),
-                    PortRange[i]->GetMaxRangeValue().GetX(), PortRange[i]->GetMaxRangeValue().GetY());
+//    if (PortRange[i])
+//      spdlog::debug("Insert to rrt: rank {0}, direction {1}, ({2},{3})-({4},{5})", this->GetRank(),
+//                    i, PortRange[i]->GetMinRangeValue().GetX(), PortRange[i]->GetMinRangeValue().GetY(),
+//                    PortRange[i]->GetMaxRangeValue().GetX(), PortRange[i]->GetMaxRangeValue().GetY());
     if (PortRange[i]) delete PortRange[i];
   }
   // Clean up clp range map

@@ -190,12 +190,12 @@ SharedState::RangeRead(const Range &pRange, Direction pDirection, unsigned long 
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-  spdlog::debug("clp {0}, time {1}, rangeread(({2},{3})-({4},{5}), {6})",
-                rank, pTime,
-                pRange.GetMinRangeValue().GetX(), pRange.GetMinRangeValue().GetY(),
-                pRange.GetMaxRangeValue().GetX(), pRange.GetMaxRangeValue().GetY(),
-                pDirection);
-  spdlog::debug("clp {0}, result size: {1}", rank, pointMap.size());
+//  spdlog::debug("clp {0}, time {1}, rangeread(({2},{3})-({4},{5}), {6})",
+//                rank, pTime,
+//                pRange.GetMinRangeValue().GetX(), pRange.GetMinRangeValue().GetY(),
+//                pRange.GetMaxRangeValue().GetX(), pRange.GetMaxRangeValue().GetY(),
+//                pDirection);
+//  spdlog::debug("clp {0}, result size: {1}", rank, pointMap.size());
   return pointMap;
 }
 

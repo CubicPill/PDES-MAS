@@ -457,9 +457,10 @@ int Alp::GetParentClp() const {
 
 unsigned long Alp::GetLvt() const {
   unsigned long minimum_agent_lvt = ULONG_MAX;
-  for (auto iter:agent_lvt_map_) {
-    if (iter.second < minimum_agent_lvt) {
-      minimum_agent_lvt = iter.second;
+  for (auto iter:agent_lvt_history_map_) {
+    unsigned long agentLastLvt = iter.second.back();
+    if (agentLastLvt < minimum_agent_lvt) {
+      minimum_agent_lvt = agentLastLvt;
     }
   }
   assert(minimum_agent_lvt != ULONG_MAX);
@@ -491,18 +492,24 @@ unsigned long Alp::GetAgentLvt(unsigned long agent_id) const {
   exit(1); //TODO this
 }
 
-bool Alp::SetAgentLvt(unsigned long agent_id, unsigned long lvt) {
+bool Alp::SetAgentLvt(unsigned long agent_id, unsigned long newLvt) {
+  auto lvt_it = agent_lvt_map_.find(agent_id);
+  assert(lvt_it != agent_lvt_map_.end());
+  unsigned long oldLvt = lvt_it->second;
+  if (oldLvt <= newLvt) {
+    lvt_it->second = newLvt;
+    return true;
+  }
+  return false;
+}
+
+bool Alp::RecordAgentLvtHistory(unsigned long agent_id) {
   auto lvt_it = agent_lvt_map_.find(agent_id);
   auto lvt_history_it = agent_lvt_history_map_.find(agent_id);
   assert(lvt_it != agent_lvt_map_.end());
   assert(lvt_history_it != agent_lvt_history_map_.end());
-  if (lvt_it->second <= lvt) {
-    lvt_it->second = lvt;
-    lvt_history_it->second.push_back(lvt);
-  }
-
-
-  return false;
+  lvt_history_it->second.push_back(lvt_it->second);
+  return true;
 }
 
 void Alp::Initialise() {
@@ -551,3 +558,4 @@ void Alp::SetCancelFlag(unsigned long agent_id, bool flag) {
 bool Alp::GetCancelFlag(unsigned long agent_id) {
   return agent_cancel_flag_map_[agent_id];
 }
+

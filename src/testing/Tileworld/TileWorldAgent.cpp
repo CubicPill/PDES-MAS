@@ -9,7 +9,7 @@
 
 TileWorldAgent::TileWorldAgent(const unsigned long startTime, const unsigned long endTime, unsigned long agentId,
                                unsigned int world_size_w, unsigned int world_size_h, unsigned int sense_range) : Agent(
-    startTime, endTime, agentId), kSenseRange(sense_range) {
+    startTime, endTime, agentId), kSenseRange(sense_range), world_size_w(world_size_w), world_size_h(world_size_h) {
   this->WritePrivateInt(IS_TILE_CARRYING, 0);
   this->WritePrivateInt(IS_EN_ROUTE, 0);
 
@@ -25,14 +25,26 @@ static inline int GetFirstDigit(int number) {
 
 void TileWorldAgent::Cycle() {
   //spdlog::warn("Cycle begin");
+  spdlog::info("Agent {}, GVT {} LVT {} - {}", this->agent_id(), this->GetGVT(), this->GetLVT(),
+               this->GetLVT() - this->GetGVT());
+  // if close to endtime, proceed only one timestamp per cycle and sync GVT to avoid LVT exceeding endtime.
+  if (this->GetLVT() > GetEndTime() - 10) {
+    this->SendGVTMessage();
+    spdlog::info("Agent {}, GVT {} endtime {}", this->agent_id(), this->GetGVT(), GetEndTime());
 
+    Point my_position = this->ReadPoint(this->agent_id(), this->GetLVT() + 1);
+    int curr_x = my_position.GetX();
+    int curr_y = my_position.GetY();
+    spdlog::info("Agent {0}, ({1},{2}), {3}", this->agent_id(), curr_x, curr_y, this->GetLVT());
+    return;
+  }
   // where am i?
   //spdlog::debug("Agent {0}, read {0}",this->agent_id());
   //Point my_position=Point(0,0);
   Point my_position = this->ReadPoint(this->agent_id(), this->GetLVT() + 1);
   int curr_x = my_position.GetX();
   int curr_y = my_position.GetY();
-  spdlog::debug("Agent {0}, at ({1},{2})", this->agent_id(), curr_x, curr_y);
+  spdlog::info("Agent {0}, ({1},{2}), {3}", this->agent_id(), curr_x, curr_y, this->GetLVT());
   //sense
   SerialisableMap<SsvId, Value<Point> > results = this->RangeQueryPoint(
       Point(curr_x - kSenseRange, curr_y - kSenseRange),
@@ -42,7 +54,7 @@ void TileWorldAgent::Cycle() {
 //      Point(-100,-100),
 //      Point(100,100),
 //      this->GetLVT());
-  spdlog::debug("RQ result size: {0}", results.size());
+  spdlog::info("Agent {0}, RQ result size {1}, {3}", this->agent_id(), results.size(), kSenseRange, this->GetLVT());
   //spdlog::debug("Agent {0}, Agent LVT {1}, preparing to read id {2}", this->agent_id(), this->GetLVT(), 1);
   map<SsvId, Point> hole_in_range = map<SsvId, Point>();
   map<SsvId, Point> tile_in_range = map<SsvId, Point>();
@@ -80,39 +92,77 @@ void TileWorldAgent::Cycle() {
     Point p = i.second;
     //we should ues A* here, but seems it makes no difference, just pass
   }
-  for (auto &i:tile_in_range) {
-    SsvId ssv_id = i.first;
-    Point p = i.second;
-    if (ReadPrivateInt(IS_TILE_CARRYING) == 0) {
-      //pick up tile
-      WritePrivateInt(IS_TILE_CARRYING, 1);
-      //WritePoint(this->agent_id(), p, this->GetLVT() + 10); // moving to the position
-      // FIXME: count the distance with A*
-      break;
-    }
 
-  }
-  for (auto &i:hole_in_range) {
-    SsvId ssv_id = i.first;
-    Point p = i.second;
-    if (ReadPrivateInt(IS_TILE_CARRYING) == 1) {
-      // have tile, move to hole
-      WritePrivateInt(IS_TILE_CARRYING, 0);
-      //WritePoint(this->agent_id(), p, this->GetLVT() + 10);
+  // by default, random move the agent
+  int rand_x = rand() % 5 - 2;  // [-2, 2]
+  int rand_y = rand() % 5 - 2;  // [-2, 2]
+  Point rand_p = Point(abs(curr_x + rand_x) % world_size_w, abs(curr_y + rand_y) % world_size_h);
 
-      break;
-    }
-  }
+  if (tile_in_range.empty()) {
+    // no tile, make a random move
 
-  if (agent_id() == 10701) {
-    // GVT initiator
-    if (this->GetLVT() > this->GetGVT() + 2000) {
-      this->SendGVTMessage();
-      spdlog::debug("GVT {}", this->GetGVT());
+    WritePoint(this->agent_id(), rand_p, this->GetLVT() + 1); // moving to the position
+    spdlog::info("Agent {0}, to ({1},{2}), {3}", this->agent_id(), rand_p.GetX(), rand_p.GetY(), this->GetLVT());
+  } else {
 
+    SsvId my_tile_ssv_id;
+    for (auto &i:tile_in_range) {
+      SsvId ssv_id = i.first;
+      Point p = i.second;
+      if (ReadPrivateInt(IS_TILE_CARRYING) == 0) {
+        //pick up tile
+        WritePrivateInt(IS_TILE_CARRYING, 1);
+
+        WritePoint(this->agent_id(), p, this->GetLVT() + 1); // moving to the position
+        spdlog::info("Agent {0}, to tile ({1},{2}), {3}", this->agent_id(), p.GetX(), p.GetY(), this->GetLVT());
+        // FIXME: count the distance with A*
+
+        my_tile_ssv_id = ssv_id;
+        break;
+      }
 
     }
+
+    if (hole_in_range.empty()) {
+      // random move with tile
+      WritePoint(this->agent_id(), rand_p, this->GetLVT() + 1); // moving to the position
+      spdlog::info("Agent {0}, to ({1},{2}) with tile, {3}", this->agent_id(), rand_p.GetX(), rand_p.GetY(),
+                   this->GetLVT());
+      WritePoint(my_tile_ssv_id.id(), rand_p, this->GetLVT() + 1);
+      spdlog::info("Agent {0}, dropped tile at ({1},{2}), {3}", this->agent_id(), rand_p.GetX(), rand_p.GetY(),
+                   this->GetLVT());
+
+    } else {
+
+      for (auto &i:hole_in_range) {
+        SsvId ssv_id = i.first;
+        Point p = i.second;
+        //    if (ReadPrivateInt(IS_TILE_CARRYING) == 1) {
+        // have tile, move to hole
+        WritePrivateInt(IS_TILE_CARRYING, 0);
+
+        WritePoint(this->agent_id(), p, this->GetLVT() + 1);
+        spdlog::info("Agent {0}, to hole ({1},{2}), {3}", this->agent_id(), p.GetX(), p.GetY(), this->GetLVT());
+
+        WritePoint(my_tile_ssv_id.id(), p, this->GetLVT() + 1);
+        spdlog::info("Agent {0}, dropped tile at hole ({1},{2}), {3}", this->agent_id(), p.GetX(), p.GetY(),
+                     this->GetLVT());
+
+        break;
+        //    }
+      }
+    }
   }
+
+//  if (agent_id() == 1010001) {
+  // GVT initiator
+  if (this->GetLVT() > this->GetGVT() + 20) {
+    this->SendGVTMessage();
+    //spdlog::warn("agent {}, GVT {}", this->agent_id(), this->GetGVT());
+
+
+  }
+//  }
   //this->Sleep(100);
 
   //spdlog::warn("Cycle end");

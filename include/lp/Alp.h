@@ -61,7 +61,9 @@ namespace pdesmas {
 
     unsigned long GetAgentLvt(unsigned long agent_id) const;
 
-    bool SetAgentLvt(unsigned long agent_id, unsigned long lvt);
+    bool SetAgentLvt(unsigned long agent_id, unsigned long newLvt);
+
+    bool RecordAgentLvtHistory(unsigned long agent_id);
 
     bool HasAgent(unsigned long agent_id);
 
