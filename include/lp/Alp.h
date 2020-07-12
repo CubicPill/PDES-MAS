@@ -45,6 +45,12 @@ namespace pdesmas {
 
     void ProcessMessage(const RangeQueryMessage *);
 
+    bool SetAlpManagedAgentLvt(unsigned long agent_id, unsigned long newLvt);
+
+    bool SetAgentLocalLvtAfterRollback(unsigned long agent_id, unsigned long newLvt);
+
+    Agent *GetAgent(unsigned long agentId);
+
   public:
     Alp(unsigned int pRank, unsigned int pCommSize,
         unsigned int pNumberOfClps, unsigned int pNumberOfAlps,
@@ -59,11 +65,13 @@ namespace pdesmas {
 
     int GetParentClp() const;
 
-    unsigned long GetAgentLvt(unsigned long agent_id) const;
+    unsigned long GetAlpManagedAgentLvt(unsigned long agent_id) const;
 
-    bool SetAgentLvt(unsigned long agent_id, unsigned long newLvt);
+    bool UpdateAgentLvtToAlp(unsigned long agentId, unsigned long newLvt);
 
-    bool RecordAgentLvtHistory(unsigned long agent_id);
+    bool RecordAgentLvtHistory(unsigned long agent_id, unsigned long timestamp);
+
+    unsigned long RollbackAgentLvtHistory(unsigned long agentId, unsigned long timestamp);
 
     bool HasAgent(unsigned long agent_id);
 

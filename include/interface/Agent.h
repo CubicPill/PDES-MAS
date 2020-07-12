@@ -36,14 +36,13 @@ namespace pdesmas {
     SendRangeQueryPointMessageAndGetResponse(unsigned long pTime, const Point pStartValue, const Point pEndValue);
 
 
-    bool SetLVT(unsigned long lvt);
-
     Alp *attached_alp_ = nullptr;
     LpId agent_identifier_;
     bool message_ready_ = false;
     unsigned long start_time_;
     unsigned long end_time_;
     unsigned long agent_id_;
+    unsigned long localLvt = 0;
     PrivateVariableStorage *private_variable_storage_;
 
     void Body() final;
@@ -98,9 +97,12 @@ namespace pdesmas {
     virtual void Cycle() = 0;
 
     void Start();
+
     unsigned long agent_id() { return agent_id_; };
 
     unsigned long GetLVT() const;
+
+    bool SetLVT(unsigned long lvt);
 
     unsigned long GetAlpLVT() const;
 
@@ -114,6 +116,8 @@ namespace pdesmas {
     void SetMessageArriveFlag();
 
     void ResetMessageArriveFlag();
+
+    void UpdateLvtToAlp();
   };
 }
 

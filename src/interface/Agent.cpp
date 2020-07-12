@@ -28,9 +28,11 @@ Agent::Agent(unsigned long const start_time, unsigned long const end_time, unsig
 void Agent::Body() {
   //spdlog::debug("Agent thread is up");
   while (GetLVT() < end_time_) {
-    spdlog::debug("Cycle begin");
+    spdlog::debug("Cycle begin, agent {}, GVT {}, LVT {}", this->agent_id_, this->GetGVT(), this->GetLVT());
     Cycle();
-    this->attached_alp_->RecordAgentLvtHistory(this->agent_id());
+    UpdateLvtToAlp();
+    spdlog::debug("Cycle end, agent {}, GVT {}, LVT {}", this->agent_id_, this->GetGVT(), this->GetLVT());
+
   }
   spdlog::debug("Agent {0} exit, LVT {1}, GVT {2}", this->agent_id(), this->GetLVT(), this->GetGVT());
   spdlog::debug("LVT >= EndTime, agent exit, id={0}", this->agent_id());
@@ -135,11 +137,11 @@ void Agent::SendGVTMessage() {
 
 void Agent::WaitUntilMessageArrive() {
 
-  spdlog::debug("Waiting... agent {0}", this->agent_id());
+  //spdlog::debug("Waiting... agent {0}", this->agent_id());
   while (!this->message_ready_) {
     SyncPoint(); // busy waiting, make sure it can be interrupted
   }
-  spdlog::debug("Wait finished! agent {0}", this->agent_id());
+  //spdlog::debug("Wait finished! agent {0}", this->agent_id());
 
   this->SyncPoint();
   this->message_ready_ = false;
@@ -150,11 +152,12 @@ void Agent::Finalise() {
 }
 
 bool Agent::SetLVT(unsigned long lvt) {
-  return attached_alp_->SetAgentLvt(agent_identifier_.GetId(), lvt);
+  this->localLvt = lvt;
+  return true;
 }
 
 unsigned long Agent::GetLVT() const {
-  return attached_alp_->GetAgentLvt(agent_identifier_.GetId());
+  return this->localLvt;
 }
 
 
@@ -186,7 +189,6 @@ const int Agent::ReadInt(unsigned long variable_id, unsigned long timestamp) {
   auto v = dynamic_cast<const Value<int> *>(ret->GetValue())->GetValue();
   this->SetLVT(timestamp + 1);
   return v;
-
 }
 
 
@@ -322,6 +324,12 @@ void Agent::ResetMessageArriveFlag() {
 
 void Agent::Start() {
   ThreadWrapper::Start(true);
+}
+
+void Agent::UpdateLvtToAlp() {
+  this->attached_alp_->Lock();
+  this->attached_alp_->UpdateAgentLvtToAlp(this->agent_id_, this->GetLVT());
+  this->attached_alp_->Unlock();
 }
 
 

@@ -11,7 +11,7 @@
 namespace pdesmas {
   class HasNumberOfTraverseHops {
     protected:
-      unsigned int fNumberOfTraverseHops;
+      unsigned int fNumberOfTraverseHops = 0;
     public:
       unsigned int GetNumberOfTraverseHops() const;
       void SetNumberOfTraverseHops(unsigned int);

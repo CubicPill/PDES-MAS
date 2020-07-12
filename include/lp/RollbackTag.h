@@ -30,24 +30,30 @@ Revisions:
 
 */
 
-class RollbackTag : public pdesmas::Serialisable
-{
+class RollbackTag : public pdesmas::Serialisable {
 
- private:
+private:
   //Slots
-  SsvId originalSsv; 
+  SsvId originalSsv;
   /**<The original shared state variable where rb originated */
   unsigned long time;
   /**< The original virtual time of the straggler write */
   int type;
-  
+  /*
+   *  #define ROLLBACK_BY_WRITE 1
+      #define ROLLBACK_BY_RU 2
+      #define ROLLBACK_BY_SM 3
+  */
+
   unsigned long int realTimeStamp; /**< The real time stamp of the rbTag, this is
 			   the real time when the first rollback tag
 			   is generated due to the straggler write */
- public:
-  RollbackTag(){}
-  RollbackTag(SsvId const&, unsigned long, int);
-  ~RollbackTag(){}
+public:
+  RollbackTag() {}
+
+  RollbackTag(SsvId const &, unsigned long, int);
+
+  ~RollbackTag() {}
 
   //Member functions
   bool operator==(RollbackTag const& rbTag) const; 

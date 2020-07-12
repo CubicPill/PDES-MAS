@@ -40,28 +40,11 @@ namespace pdesmas {
     map<SsvId, AbstractValue *> fClpSsvIdValueMap;
 
 
-    void ParseMessage(const string) const;
-
-    void ParseALP(const string);
-
-    void ParseSSV(const string, int);
-
-    void ParseSSVForALP(const string);
-
-    void ParseCLP(const string);
-
-    void InitType(const string);
-
-
   public:
     Initialisor(int number_of_clp, int number_of_alp, unsigned long start_time, unsigned long end_time);
 
     ~Initialisor();
-
-    void ParseFileCLP(const string, int);
-
-    void ParseFileALP(const string);
-
+    
     void attach_alp_to_clp(int alp, int clp);
 
     void preload_variable(const string &type, unsigned long variable_id, const string &value, unsigned int clpId);

@@ -365,6 +365,9 @@ void Clp::ProcessMessage(const SingleReadMessage *pSingleReadMessage) {
   if (pSingleReadMessage->GetTimestamp() < fGVT) {
     spdlog::critical("Clp::ProcessMessage(SingleReadMessage): Message timestamp less than GVT, {}<{}",
                      pSingleReadMessage->GetTimestamp(), fGVT);
+    ostringstream ss;
+    pSingleReadMessage->Serialise(ss);
+    spdlog::critical(ss.str());
     exit(1);
   }
   AbstractValue *value = fSharedState.Read(pSingleReadMessage->GetSsvId(),

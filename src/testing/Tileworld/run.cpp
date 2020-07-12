@@ -8,7 +8,7 @@ using namespace pdesmas;
 const int end_time = 100;
 
 int main(int argc, char **argv) {
-  spdlog::set_level(spdlog::level::info);
+  spdlog::set_level(spdlog::level::debug);
   Simulation sim = Simulation();
 //  sim.Construct(1, 2, 0, 10000);
   sim.Construct(7, 8, 0, end_time);
