@@ -304,7 +304,10 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
     return false;
   }
   // Check if rollback rolls back far enough
-  if (pRollbackMessage->GetTimestamp() > GetAlpManagedAgentLvt(pRollbackMessage->GetOriginalAgent().GetId())) {
+  if (rollback_message_timestamp >= agent->GetLVT()) {
+    spdlog::warn(
+        "Alp::ProcessRollback(): Rollback time not smaller than LVT, agent: {}, local LVT {}, rollback time: {}",
+        agent_id, agent->GetLVT(), rollback_message_timestamp);
     return false;
   }
   // Rollback message is good, rollback
@@ -316,33 +319,35 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
                      agent_id, GetAlpManagedAgentLvt(agent_id), rollback_message_timestamp);
     exit(1);
   }
-  if (rollback_message_timestamp >= GetAlpManagedAgentLvt(agent_id)) {
-    spdlog::error("Alp::ProcessRollback(): Rollback time not smaller than LVT, agent: {}, LVT {}, rollback time: {}",
-                  agent_id, GetAlpManagedAgentLvt(agent_id), rollback_message_timestamp);
-    //exit(1);
-  }
+
   //spdlog::debug("Process rollback!");
 
 
   // stop the agent
+  spdlog::debug("Agent {} RB stopping", agent_id);
   agent->Abort();
-  //spdlog::debug("Agent stopping");
+  spdlog::debug("Agent {} agent->Abort()", agent_id);
+
   // should have been stopped if not in final waiting stage
   // cancel flag need to be set before resetting semaphore
   SetCancelFlag(agent_id, true);
+  spdlog::debug("Agent {} SetCancelFlag", agent_id);
+
   // should have been stopped if in final waiting stage
   agent->ResetMessageArriveFlag();
+  spdlog::debug("Agent {} ResetMessageArriveFlag", agent_id);
 
   //delete agent_response_map_[agent_id];
 
   agent->Join();
-  //spdlog::debug("Agent stopped");
+  spdlog::debug("Agent {} RB stopped", agent_id);
   //agent_response_map_[agent_id] = nullptr;
   //spdlog::debug("agent_response_map_[{}] set to nullptr", agent_id);
 
   //agent_response_message_id_map_[agent_id] = 0;
 
   // rollback LVT and history
+
   unsigned long rollback_to_timestamp = this->RollbackAgentLvtHistory(agent_id, rollback_message_timestamp);
   if (rollback_to_timestamp < this->GetGvt()) {
     spdlog::critical(
@@ -351,9 +356,12 @@ bool Alp::ProcessRollback(const RollbackMessage *pRollbackMessage) {
     exit(1);
   }
   spdlog::warn("LOGRB {} {} {}", agent_id, rollback_to_timestamp, GetAlpManagedAgentLvt(agent_id));
-
-  this->SetAlpManagedAgentLvt(agent_id, rollback_to_timestamp);
+  // check if need to rollback alp managed lvt history
+  if (rollback_to_timestamp < GetAlpManagedAgentLvt(agent_id)) {
+    this->SetAlpManagedAgentLvt(agent_id, rollback_to_timestamp);
+  }
   this->SetAgentLocalLvtAfterRollback(agent_id, rollback_to_timestamp);
+
   spdlog::debug("Agent {0} rollback to timestamp {1}", agent_id, rollback_to_timestamp);
 
   /*
@@ -508,17 +516,13 @@ bool Alp::SetAlpManagedAgentLvt(unsigned long agent_id, unsigned long newLvt) {
 }
 
 bool Alp::UpdateAgentLvtToAlp(unsigned long agentId, unsigned long newLvt) {
-  this->agent_rollback_reentry_lock_map_[agentId].Lock();
   unsigned long oldLvt = this->GetAlpManagedAgentLvt(agentId);
   if (oldLvt < newLvt) {
     this->SetAlpManagedAgentLvt(agentId, newLvt);
     this->RecordAgentLvtHistory(agentId, newLvt);
-    this->agent_rollback_reentry_lock_map_[agentId].Unlock();
-
     return true;
   }
   spdlog::error("Alp::UpdateAgentLvtToAlp({}, {}): new {} <= old {}", agentId, newLvt, newLvt, oldLvt);
-  this->agent_rollback_reentry_lock_map_[agentId].Unlock();
 
   return false;
 }
@@ -529,6 +533,10 @@ bool Alp::RecordAgentLvtHistory(unsigned long agent_id, unsigned long timestamp)
     lvt_history_it->second.push_back(timestamp);
     return true;
   }
+  spdlog::error("Alp::RecordAgentLvtHistory({}, {}): not inserted, new {} <= lvt history largest {}", agent_id,
+                timestamp, timestamp,
+                lvt_history_it->second.back());
+
   return false;
 }
 
@@ -583,8 +591,10 @@ unsigned long Alp::RollbackAgentLvtHistory(unsigned long agentId, unsigned long 
   /**
    * Given rollback message timestamp, erase agent lvt history which is larger than this timestamp
    * Returns the timestamp agent should rollback to**/
-  spdlog::debug("Alp::RollbackAgentLvtHistory({}, {})", agentId, timestamp);
+
   auto &agent_lvt_history_list = agent_lvt_history_map_[agentId];
+  spdlog::debug("Alp::RollbackAgentLvtHistory({}, {}), initial size: {}", agentId, timestamp,
+                agent_lvt_history_list.size());
   for (auto i:agent_lvt_history_list) {
     spdlog::debug("Agent {}, have history ts {}", agentId, i);
   }
@@ -592,7 +602,8 @@ unsigned long Alp::RollbackAgentLvtHistory(unsigned long agentId, unsigned long 
   agent_lvt_history_list.erase(
       std::upper_bound(agent_lvt_history_list.begin(), agent_lvt_history_list.end(), timestamp),
       agent_lvt_history_list.end());
-  spdlog::debug("Alp::RollbackAgentLvtHistory: Agent {}, rollback to {}", agentId, agent_lvt_history_list.back());
+  spdlog::debug("Alp::RollbackAgentLvtHistory: Agent {}, rollback to {}, size after rb: {}", agentId,
+                agent_lvt_history_list.back(), agent_lvt_history_list.size());
 
   return agent_lvt_history_list.back();
 }

@@ -324,13 +324,15 @@ void Agent::ResetMessageArriveFlag() {
 
 void Agent::Start() {
   ThreadWrapper::Start(true);
+  ostringstream ss;
+  ss << std::this_thread::get_id();
+  spdlog::info("Agent {}, thread start, id {:x}", this->agent_id_, stoull(ss.str()));
 }
 
 void Agent::UpdateLvtToAlp() {
-  this->attached_alp_->Lock();
   this->attached_alp_->UpdateAgentLvtToAlp(this->agent_id_, this->GetLVT());
-  this->attached_alp_->Unlock();
 }
+
 
 
 

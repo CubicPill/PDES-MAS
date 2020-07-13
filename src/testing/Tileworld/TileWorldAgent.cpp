@@ -15,7 +15,6 @@ TileWorldAgent::TileWorldAgent(const unsigned long startTime, const unsigned lon
 
 }
 
-
 static inline int GetFirstDigit(int number) {
   while (number >= 10) {
     number = (number - (number % 10)) / 10;
