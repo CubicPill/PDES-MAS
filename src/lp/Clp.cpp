@@ -1071,4 +1071,9 @@ void Clp::InitialisePortRanges(const Initialisor *pInitialisor) {
   }
 }
 
+map<unsigned long, list<unsigned long>> Clp::GetAgentTimeHistoryMap() const {
+  // for clp, there's no history
+  return map<unsigned long, list<unsigned long>>();
+}
+
 #endif

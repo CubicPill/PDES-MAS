@@ -6,23 +6,26 @@
 #include "HasRedMessageTime.h"
 #include "HasMatternCut.h"
 #include "HasMessageCount.h"
+#include "HasAgentTimeHistoryRecord.h"
 
 namespace pdesmas {
-  class GvtControlMessage: public GvtMessage,
-      public HasMessageMinimumTime,
-      public HasRedMessageTime,
-      public HasMatternCut,
-      public HasMessageCount {
-    private:
-      static AbstractMessage* CreateInstance();
+  class GvtControlMessage : public GvtMessage,
+                            public HasMessageMinimumTime,
+                            public HasRedMessageTime,
+                            public HasMatternCut,
+                            public HasMessageCount,
+                            public HasAgentTimeHistoryRecord {
+  private:
+    static AbstractMessage *CreateInstance();
 
-    public:
-      GvtControlMessage();
-      virtual ~GvtControlMessage();
+  public:
+    GvtControlMessage();
 
-      pdesmasType GetType() const;
+    virtual ~GvtControlMessage();
 
-      void Serialise(ostream&) const;
+    pdesmasType GetType() const;
+
+    void Serialise(ostream &) const;
       void Deserialise(istream&);
   };
 }

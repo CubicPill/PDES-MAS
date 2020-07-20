@@ -66,6 +66,7 @@ add_library(PDESMAS SHARED
         src/messages/content/HasTimestamp.cpp
         src/messages/content/HasValue.cpp
         src/messages/content/HasWriteStatus.cpp
+        src/messages/content/HasAgentTimeHistoryRecord.cpp
         src/messages/AbstractMessage.cpp
         src/messages/AntiMessage.cpp
         src/messages/ControlMessage.cpp
@@ -113,7 +114,8 @@ add_library(PDESMAS SHARED
         src/util/Mutex.cpp
         src/util/Thread.cpp
         src/interface/Simulation.cpp
-        src/state/PrivateVariableStorage.cpp)
+        src/state/PrivateVariableStorage.cpp
+        )
 
 add_executable(runtest src/testing/TestAgent.cpp src/testing/run.cpp)
 add_executable(tileworld src/testing/Tileworld/TileWorldAgent.cpp src/testing/Tileworld/run.cpp)

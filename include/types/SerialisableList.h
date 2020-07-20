@@ -23,14 +23,10 @@ namespace pdesmas {
   };
 
   template<typename valueType>
-  SerialisableList<valueType>::SerialisableList() {
-
-  }
+  SerialisableList<valueType>::SerialisableList() = default;
 
   template<typename valueType>
-  SerialisableList<valueType>::~SerialisableList() {
-
-  }
+  SerialisableList<valueType>::~SerialisableList() = default;
 
   template<typename valueType>
   void SerialisableList<valueType>::Serialise(ostream& pOstream) const {

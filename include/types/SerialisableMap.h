@@ -10,8 +10,7 @@
 
 #include <map>
 #include "Serialisable.h"
-#include "Log.h"
-
+#include "spdlog/spdlog.h"
 using std::map;
 using std::numeric_limits;
 using std::streamsize;
@@ -28,13 +27,10 @@ namespace pdesmas {
   };
 
   template<typename keyType, typename valueType>
-  SerialisableMap<keyType, valueType>::SerialisableMap() {
+  SerialisableMap<keyType, valueType>::SerialisableMap() = default;
 
-  }
   template<typename keyType, typename valueType>
-  SerialisableMap<keyType, valueType>::~SerialisableMap() {
-
-  }
+  SerialisableMap<keyType, valueType>::~SerialisableMap() = default;
   template<typename keyType, typename valueType>
   void SerialisableMap<keyType, valueType>::Serialise(ostream& pOstream) const {
     const unsigned int size = this->size();

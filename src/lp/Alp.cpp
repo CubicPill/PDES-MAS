@@ -483,8 +483,8 @@ void Alp::SetGvt(unsigned long pGvt) {
   fGVT = pGvt;
   ClearSendList(pGvt);
   ClearRollbackTagList(pGvt);
+  CleanUpAgentLvtHistory(pGvt);
 }
-
 
 unsigned long Alp::GetNewMessageId() const {
   return message_id_handler_->GetNextID();
@@ -619,6 +619,21 @@ Agent *Alp::GetAgent(unsigned long agentId) {
 bool Alp::SetAgentLocalLvtAfterRollback(unsigned long agent_id, unsigned long newLvt) {
   this->GetAgent(agent_id)->SetLVT(newLvt);
   return true;
+}
+
+bool Alp::CleanUpAgentLvtHistory(unsigned long timestamp) {
+  for (auto &i:agent_lvt_history_map_) {
+    auto &agent_lvt_history_list = i.second;
+    agent_lvt_history_list.erase(
+        agent_lvt_history_list.begin(),
+        std::lower_bound(agent_lvt_history_list.begin(), agent_lvt_history_list.end(), timestamp)
+    );
+  }
+  return true;
+}
+
+map<unsigned long, list<unsigned long>> Alp::GetAgentTimeHistoryMap() const {
+  return this->agent_lvt_history_map_;
 }
 
 

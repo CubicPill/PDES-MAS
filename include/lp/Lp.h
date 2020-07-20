@@ -83,24 +83,36 @@ namespace pdesmas {
        RecvSemaphore). When signalled the method processes incoming
        messages using the ProcessMessage method. */
       void Run();
-      // True if the Lp has received end messages from all other Lps
-      bool AllEndMessagesReceived() const;
-      // Returns the current LVT of the Lp
-      virtual unsigned long GetLvt() const=0;
-      // Returns Gvt of the Lp
-      unsigned long GetGvt() const;
-      // Sets Gvt of the Lp
-      virtual void SetGvt(unsigned long)=0;
-      // Returns the end time of this Lps Simulation
-      unsigned long GetEndTime() const;
-      // Initialisation hook - nothing by default
-      virtual void Initialise()=0;
-      // Shut down hook - nothing by default
-      virtual void Finalise()=0;
-      // We can terminate when our gvt is past endTime
-      // Returns true when we have reached the termination condition, ie., gvt >= endTime
-      virtual bool TerminationCondition() const;
-      void Lock();
+
+    // True if the Lp has received end messages from all other Lps
+    bool AllEndMessagesReceived() const;
+
+    // Returns the current LVT of the Lp
+    virtual unsigned long GetLvt() const = 0;
+
+    // Returns Gvt of the Lp
+    unsigned long GetGvt() const;
+
+    // Sets Gvt of the Lp
+    virtual void SetGvt(unsigned long) = 0;
+
+    // Gets agent history map of Lp (ALP only, CLP return empty map)
+    virtual map<unsigned long, list<unsigned long>> GetAgentTimeHistoryMap() const = 0;
+
+    // Returns the end time of this Lps Simulation
+    unsigned long GetEndTime() const;
+
+    // Initialisation hook - nothing by default
+    virtual void Initialise() = 0;
+
+    // Shut down hook - nothing by default
+    virtual void Finalise() = 0;
+
+    // We can terminate when our gvt is past endTime
+    // Returns true when we have reached the termination condition, ie., gvt >= endTime
+    virtual bool TerminationCondition() const;
+
+    void Lock();
       void Unlock();
       // Method used when messages are placed in the send queue. This signals the semaphore in the send thread to initiate an MPI send
       void SignalSend();

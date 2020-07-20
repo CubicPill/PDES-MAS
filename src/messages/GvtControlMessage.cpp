@@ -14,11 +14,11 @@ pdesmasType GvtControlMessage::GetType() const {
   return GVTCONTROLMESSAGE;
 }
 
-AbstractMessage* GvtControlMessage::CreateInstance() {
+AbstractMessage *GvtControlMessage::CreateInstance() {
   return new GvtControlMessage;
 }
 
-void GvtControlMessage::Serialise(ostream& pOstream) const {
+void GvtControlMessage::Serialise(ostream &pOstream) const {
   pOstream << DELIM_LEFT << GetType();
   pOstream << DELIM_VAR_SEPARATOR << fOrigin;
   pOstream << DELIM_VAR_SEPARATOR << fDestination;
@@ -26,10 +26,11 @@ void GvtControlMessage::Serialise(ostream& pOstream) const {
   pOstream << DELIM_VAR_SEPARATOR << fRedMessageTime;
   pOstream << DELIM_VAR_SEPARATOR << fMatternCut;
   pOstream << DELIM_VAR_SEPARATOR << fMessageCount;
+  pOstream << DELIM_VAR_SEPARATOR << agentTimeHistoryRecord;
   pOstream << DELIM_RIGHT;
 }
 
-void GvtControlMessage::Deserialise(istream& pIstream) {
+void GvtControlMessage::Deserialise(istream &pIstream) {
   IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
   pIstream >> fOrigin;
   IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
@@ -42,5 +43,8 @@ void GvtControlMessage::Deserialise(istream& pIstream) {
   pIstream >> fMatternCut;
   IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
   pIstream >> fMessageCount;
+  IgnoreTo(pIstream, DELIM_VAR_SEPARATOR);
+  pIstream >> agentTimeHistoryRecord;
+  // DONT CHANGE THE ORDER!!!
   IgnoreTo(pIstream, DELIM_RIGHT);
 }

@@ -51,6 +51,7 @@ namespace pdesmas {
 
     Agent *GetAgent(unsigned long agentId);
 
+    bool CleanUpAgentLvtHistory(unsigned long timestamp);
   public:
     Alp(unsigned int pRank, unsigned int pCommSize,
         unsigned int pNumberOfClps, unsigned int pNumberOfAlps,
@@ -85,9 +86,10 @@ namespace pdesmas {
 
     const AbstractMessage *GetResponseMessage(unsigned long agent_id) const;
 
-    Semaphore &GetWaitingSemaphore(unsigned long agent_id);
 
     bool TerminationCondition() const override;
+
+    map<unsigned long, list<unsigned long>> GetAgentTimeHistoryMap() const override;
 
     void SetGvt(unsigned long);
 

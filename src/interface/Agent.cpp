@@ -42,7 +42,7 @@ void Agent::Body() {
     }
     sleep(1);
     SendGVTMessage(); // Initiate GVT calculation to get ready for termination
-    spdlog::info("Agent {} finsihed, waiting for GVT,  GVT {}, LVT {}, ALP LVT {}", this->agent_id(), this->GetGVT(),
+    spdlog::info("Agent {} finished, waiting for GVT,  GVT {}, LVT {}, ALP LVT {}", this->agent_id(), this->GetGVT(),
                  this->GetLVT(),
                  this->GetAlpLVT());
   }

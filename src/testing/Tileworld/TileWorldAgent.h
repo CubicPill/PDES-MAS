@@ -22,7 +22,7 @@ public:
   };
 
   TileWorldAgent(unsigned long start_time, unsigned long end_time, unsigned long agent_id,
-                 unsigned int world_size_w, unsigned int world_size_h, unsigned int sense_range);
+                 unsigned int world_size_w, unsigned int world_size_h, unsigned int sense_range, unsigned int seed);
 
   void Cycle() override;
 
@@ -34,6 +34,7 @@ private:
   unsigned long kLocationSsvId;
   unsigned int world_size_w;
   unsigned int world_size_h;
+  unsigned int rand_seed;
 };
 
 

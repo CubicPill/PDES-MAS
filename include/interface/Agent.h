@@ -16,7 +16,6 @@
 #include "HasResponseMessage.h"
 #include "EndMessage.h"
 #include "PrivateVariableStorage.h"
-#include <csignal>
 #include "ThreadWrapper.h"
 
 namespace pdesmas {
