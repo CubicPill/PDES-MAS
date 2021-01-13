@@ -15,13 +15,14 @@ using namespace std;
 namespace pdesmas {
   class PrivateVariableStorage {
   private:
-    map<unsigned long,SerialisableList<WritePeriod> > variable_id_wp_map_;
+    map<unsigned long, SerialisableList<WritePeriod> *> variable_id_wp_map_ = map<unsigned long, SerialisableList<WritePeriod> *>();
+
   public:
-    void AddVariable(const SsvId& variable_id, AbstractValue *v, unsigned long timestamp);
+    bool AddVariable(const unsigned long variable_id);
 
-    AbstractValue *ReadVariable(const SsvId& variable_id, unsigned long timestamp);
+    AbstractValue *ReadVariable(const unsigned long variable_id, unsigned long timestamp);
 
-    void WriteVariable(const SsvId& variable_id, AbstractValue *value, unsigned long timestamp);
+    bool WriteVariable(const unsigned long variable_id, AbstractValue *value, unsigned long timestamp);
 
     void PerformRollback(unsigned long timestamp);
 

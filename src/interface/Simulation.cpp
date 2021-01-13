@@ -6,17 +6,23 @@
 #include "Simulation.h"
 #include <spdlog/spdlog.h>
 
-void Simulation::Construct(int number_of_clp, int number_of_alp, unsigned long start_time, unsigned long end_time) {
-  number_of_clp_ = number_of_clp;
-  number_of_alp_ = number_of_alp;
-  start_time_ = start_time;
-  end_time_ = end_time;
+void Simulation::InitMPI(int *numMPI) {
   int providedThreadSupport;
   MPI_Init_thread(nullptr, nullptr, MPI_THREAD_SERIALIZED, &providedThreadSupport);
   assert(providedThreadSupport == MPI_THREAD_SERIALIZED);
   MPI_Comm_size(MPI_COMM_WORLD, &comm_size_);
   MPI_Comm_rank(MPI_COMM_WORLD, &comm_rank_);
+  *numMPI = comm_size_;
   spdlog::info("MPI Process up ,rank {}, pid {}", comm_rank_, getpid());
+}
+
+
+void Simulation::Construct(int number_of_clp, int number_of_alp, unsigned long start_time, unsigned long end_time) {
+  number_of_clp_ = number_of_clp;
+  number_of_alp_ = number_of_alp;
+  start_time_ = start_time;
+  end_time_ = end_time;
+
   for (int i = 0; i < number_of_alp + number_of_clp; ++i) {
     topology_[i] = new DummyNode();
   }

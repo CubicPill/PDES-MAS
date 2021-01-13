@@ -62,7 +62,7 @@ void HasIDLVTMap::RollbackAgentLVT(long pAgentID, unsigned long pTime) {
     LOG(logERROR) << "HasIDLVTMap::RollbackAgentLVT# Unknown agent: " << pAgentID;
     exit(1);
   }
-  unsigned long time = pTime - 1;
+  long time = (long)pTime - 1;
   if (time < 0) {
     LOG(logERROR) << "HasIDLVTMap::RollbackAgentLVT# Rollback time smaller then 0, agent: " << pAgentID << ", LVT: " << fAgentIdLvtMap[pAgentID] << ", rollback time: " << pTime;
     exit(1);

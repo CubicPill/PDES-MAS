@@ -8,7 +8,7 @@ using namespace std;
 
 namespace pdesmas {
 
-#define THRESHOLD_CONST 1
+#define THRESHOLD_CONST 0.5
 
   class AccessCostCalculator {
     private:

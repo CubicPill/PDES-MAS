@@ -16,7 +16,7 @@
 #include <vector>
 #include <interface/IdentifierHandler.h>
 #include <PrivateVariableStorage.h>
-
+#include <set>
 namespace pdesmas {
   class Agent;
 
@@ -31,6 +31,8 @@ namespace pdesmas {
     map<unsigned long, list<unsigned long> > agent_lvt_history_map_; // use this to perform LVT rollback
     map<unsigned long, PrivateVariableStorage> agent_local_variables_map_;
     map<unsigned long, bool> agent_cancel_flag_map_;
+    set<unsigned long> restart_map_;
+    bool restart_p=false;
     int fParentClp;
     Mutex fProcessMessageMutex;
 
@@ -59,6 +61,9 @@ namespace pdesmas {
 
     int GetParentClp() const;
 
+    void triggerSelfRestart(unsigned long agent_id);
+    void doSelfRestart( );
+
     unsigned long GetAgentLvt(unsigned long agent_id) const;
 
     bool SetAgentLvt(unsigned long agent_id, unsigned long lvt);
@@ -74,8 +79,6 @@ namespace pdesmas {
     unsigned long GetNewMessageId() const;
 
     const AbstractMessage *GetResponseMessage(unsigned long agent_id) const;
-
-    Semaphore &GetWaitingSemaphore(unsigned long agent_id);
 
     bool TerminationCondition() const override;
 

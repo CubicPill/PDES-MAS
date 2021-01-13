@@ -48,8 +48,8 @@ public:
 
 class Simulation {
 private:
-  Alp *alp_= nullptr;
-  Clp *clp_= nullptr;
+  Alp *alp_ = nullptr;
+  Clp *clp_ = nullptr;
   int comm_rank_;
   int comm_size_;
   int number_of_clp_;
@@ -62,6 +62,8 @@ public:
   Simulation();
 
   ~Simulation();
+
+  void InitMPI(int *numMPI);
 
   void Construct(int number_of_clp, int number_of_alp, unsigned long start_time, unsigned long end_time);
 

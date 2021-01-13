@@ -174,6 +174,9 @@ void Clp::Send() {
       // Skip
       break;
   }
+  ostringstream out;
+  sendMessage->Serialise(out);
+  spdlog::debug("CLP {} send message: {}", this->GetRank(), out.str());
   fMPIInterface->Send(sendMessage);
 }
 
@@ -189,7 +192,9 @@ void Clp::Receive() {
   }
   // If there's no message, return
   if (NULL == receivedMessage) return;
-
+  ostringstream out;
+  receivedMessage->Serialise(out);
+  spdlog::debug("CLP {} receive message: {}", this->GetRank(), out.str());
   // If the received message is a simulation message, increase #hops
   switch (receivedMessage->GetType()) {
     case SINGLEREADMESSAGE: {
@@ -362,14 +367,15 @@ void Clp::ProcessMessage(const SingleReadMessage *pSingleReadMessage) {
   // SendReadMessageAndGetResponse the value of the SSV
   LOG(logFINEST) << "Clp::ProcessMessage(SingleReadMessage)(" << GetRank()
                  << ")# SendReadMessageAndGetResponse SSV from message: " << *pSingleReadMessage;
-  if (pSingleReadMessage->GetTimestamp() < fGVT) {
+  unsigned long ts = pSingleReadMessage->GetTimestamp();
+  if (ts < fGVT) {
     spdlog::critical("Clp::ProcessMessage(SingleReadMessage): Message timestamp less that GVT, {}<{}",
                      pSingleReadMessage->GetTimestamp(), fGVT);
-    return;
-    exit(1);
+    ts = fGVT;
   }
+
   AbstractValue *value = fSharedState.Read(pSingleReadMessage->GetSsvId(),
-                                           pSingleReadMessage->GetOriginalAgent(), pSingleReadMessage->GetTimestamp());
+                                           pSingleReadMessage->GetOriginalAgent(), ts);
   // Create and send response message
   SingleReadResponseMessage *singleReadMessageResponse =
       new SingleReadResponseMessage();
@@ -705,20 +711,20 @@ void Clp::ProcessMessage(const RangeQueryMessage *pRangeQueryMessage) {
   newRangeQueryMessage->IncrementNumberOfTraverseHops();
   // If this CLP hasn't been seen before
   if (!(fRangeTracker->HasEntry(newRangeQueryMessage->GetIdentifier()))) {
-    spdlog::debug("clp {}, RQ hasn't been seen before", this->GetRank());
-    for (int i = 0; i < DIRECTION_SIZE; ++i) {
-      if (fRangeRoutingTable[i]) {
-        Range *r = fRangeRoutingTable[i]->GetRangeCopy(fStartTime);
-        if (r) {
-          spdlog::debug("clp {0}, direction {1}: ({2},{3})-({4},{5})",
-                        this->GetRank(), i,
-                        r->GetMinRangeValue().GetX(), r->GetMinRangeValue().GetY(),
-                        r->GetMaxRangeValue().GetX(), r->GetMaxRangeValue().GetY());
-        }
-
-        delete r;
-      }
-    }
+    //spdlog::debug("clp {}, RQ hasn't been seen before", this->GetRank());
+//    for (int i = 0; i < DIRECTION_SIZE; ++i) {
+//      if (fRangeRoutingTable[i]) {
+//        Range *r = fRangeRoutingTable[i]->GetRangeCopy(fStartTime);
+//        if (r) {
+//          spdlog::debug("clp {0}, direction {1}: ({2},{3})-({4},{5})",
+//                        this->GetRank(), i,
+//                        r->GetMinRangeValue().GetX(), r->GetMinRangeValue().GetY(),
+//                        r->GetMaxRangeValue().GetX(), r->GetMaxRangeValue().GetY());
+//        }
+//
+//        delete r;
+//      }
+//    }
     // This CLP hasn't been seen before
     // Find the incoming port
     Direction incomingPort = fRouter->GetDirectionByLpRank(
@@ -841,7 +847,7 @@ void Clp::ProcessMessage(const RangeQueryMessage *pRangeQueryMessage) {
     rangeQueryResponse->SetDestination(
         fRouter->GetLpRankByDirection(
             fRangeTracker->DeleteEntry(newRangeQueryMessage->GetIdentifier())));
-    spdlog::debug("clp {0}, rq response size: {1}", this->GetRank(), rangeQueryResponse->GetSsvValueList().size());
+    //spdlog::debug("clp {0}, rq response size: {1}", this->GetRank(), rangeQueryResponse->GetSsvValueList().size());
     rangeQueryResponse->SendToLp(this);
   }
   delete newRangeQueryMessage;
@@ -897,6 +903,7 @@ void Clp::ProcessMessage(const RangeUpdateMessage *pRangeUpdateMessage) {
   // Declare a rollback list
   RollbackList rollbacklist;
   // Update the range routing table
+  // FIXME check pRangeUpdateMessage->GetTimestamp()
   fRangeRoutingTable[(int) originPort]->ProcessRangeUpdate(
       pRangeUpdateMessage->GetTimestamp(), range, rollbacklist);
   // Send rollbacks, if any

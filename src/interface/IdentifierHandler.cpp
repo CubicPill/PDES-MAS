@@ -15,14 +15,20 @@ IdentifierHandler::IdentifierHandler(unsigned int pRank, unsigned int pNumberOfC
 }
 
 unsigned long IdentifierHandler::GetNextID() {
+  unsigned long t;
   lock_.Lock();
   // Handle tick over ULONG_MAX
   if (fLastID > (ULONG_MAX - fAdditional)) fLastID = fInitialID;
   else fLastID += fAdditional;
+  t = fLastID;
   lock_.Unlock();
-  return fLastID;
+  return t;
 }
 
-unsigned long IdentifierHandler::GetLastID() const {
-  return fLastID;
+unsigned long IdentifierHandler::GetLastID() {
+  unsigned long t;
+  lock_.Lock();
+  t = fLastID;
+  lock_.Unlock();
+  return t;
 }

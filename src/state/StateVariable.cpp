@@ -37,12 +37,12 @@ void StateVariable::AddWritePeriod(const AbstractValue *pValue, unsigned long pT
 
 void StateVariable::RemoveWritePeriods(unsigned long pTime) {
   LOG(logFINEST) << "StateVariable::RemoveWritePeriods# Remove write periods up to: " << pTime;
-  int sumlen = 0;
-  for (auto i:fWritePeriodList) {
-    int len = i.GetValueCopy()->GetValueString().length();
-    sumlen += len;
-  }
-  spdlog::warn("LOGMEM ssv {} time {} LEN {}", this->fStateVariableID.id(), pTime, sumlen);
+//  int sumlen = 0;
+//  for (auto i:fWritePeriodList) {
+//    int len = i.GetValueCopy()->GetValueString().length();
+//    sumlen += len;
+//  }
+  //spdlog::warn("LOGMEM ssv {} time {} LEN {}", this->fStateVariableID.id(), pTime, sumlen);
   SerialisableList<WritePeriod>::reverse_iterator reverseWritePeriodIterator = fWritePeriodList.rbegin();
   // Walk backwards to the list until the reach the write period with an equal or less than start time then the parameter time
   while (reverseWritePeriodIterator != fWritePeriodList.rend()) {
@@ -122,12 +122,12 @@ void StateVariable::WriteWithRollback(const LpId &pWritingAgent, const AbstractV
   if (fWritePeriodList.empty()) {
     fWritePeriodList.push_back(newWritePeriod);
     pWriteStatus = writeSUCCESS;
-    int sumlen = 0;
-    for (auto i:fWritePeriodList) {
-      int len = i.GetValueCopy()->GetValueString().length();
-      sumlen += len;
-    }
-    spdlog::warn("LOGMEM ssv {} time {} LEN {}", this->fStateVariableID.id(), pTime, sumlen);
+//    int sumlen = 0;
+//    for (auto i:fWritePeriodList) {
+//      int len = i.GetValueCopy()->GetValueString().length();
+//      sumlen += len;
+//    }
+//    spdlog::warn("LOGMEM ssv {} time {} LEN {}", this->fStateVariableID.id(), pTime, sumlen);
     return;
   }
   // The list is not empty, so reverse walk to write period just before new write period in time
@@ -166,23 +166,23 @@ void StateVariable::WriteWithRollback(const LpId &pWritingAgent, const AbstractV
     // Insert write period just before the just moved iterator (base reverse iterator point to one to the right)
     fWritePeriodList.insert(reverseWritePeriodIterator.base(), newWritePeriod);
     pWriteStatus = writeSUCCESS;
-    int sumlen = 0;
-    for (auto i:fWritePeriodList) {
-      int len = i.GetValueCopy()->GetValueString().length();
-      sumlen += len;
-    }
-    spdlog::warn("LOGMEM ssv {} time {} LEN {}", this->fStateVariableID.id(), pTime, sumlen);
+//    int sumlen = 0;
+//    for (auto i:fWritePeriodList) {
+//      int len = i.GetValueCopy()->GetValueString().length();
+//      sumlen += len;
+//    }
+//    spdlog::warn("LOGMEM ssv {} time {} LEN {}", this->fStateVariableID.id(), pTime, sumlen);
     return;
   }
   // We have not split a write period, so we can append the new write period to the list
   fWritePeriodList.push_back(newWritePeriod);
   pWriteStatus = writeSUCCESS;
-  int sumlen = 0;
-  for (auto i:fWritePeriodList) {
-    int len = i.GetValueCopy()->GetValueString().length();
-    sumlen += len;
-  }
-  spdlog::warn("LOGMEM ssv {} time {} LEN {}", this->fStateVariableID.id(), pTime, sumlen);
+//  int sumlen = 0;
+//  for (auto i:fWritePeriodList) {
+//    int len = i.GetValueCopy()->GetValueString().length();
+//    sumlen += len;
+//  }
+//  spdlog::warn("LOGMEM ssv {} time {} LEN {}", this->fStateVariableID.id(), pTime, sumlen);
 }
 
 void StateVariable::PerformReadRollback(const LpId &pWritingAgent, unsigned long pTime) {
