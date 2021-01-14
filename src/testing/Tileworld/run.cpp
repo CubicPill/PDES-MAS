@@ -11,9 +11,14 @@ using namespace pdesmas;
 int endTime = 100;
 
 int main(int argc, char **argv) {
-  spdlog::set_level(spdlog::level::warn);
+  spdlog::set_level(spdlog::level::info);
   spdlog::set_pattern("%f [%P] %+");
   Simulation sim = Simulation();
+  if (argc != 5) {
+    fprintf(stderr, "Incorrect number of parameters\n");
+    fprintf(stderr, "Parameters: tileworld <numAgent> <randSeed> <worldSize> <numTile>\n");
+    exit(1);
+  }
 
   uint64_t numAgents = std::atoll(argv[1]);
 
@@ -21,8 +26,8 @@ int main(int argc, char **argv) {
   endTime = 100;
   int numMPI;
   sim.InitMPI(&numMPI);
-  const int worldSize = 2048;
-  const uint64_t numTile = 1024; // 1024
+  int worldSize = std::atoi(argv[3]); //2048
+  uint64_t numTile = std::atoi(argv[4]); // 1024
   srand(randSeed * numMPI);
   std::normal_distribution<float> distribution(25, 7);
   std::default_random_engine generator;
@@ -44,13 +49,14 @@ int main(int argc, char **argv) {
       spdlog::info("sim.attach_alp_to_clp({}, {})", i, (i - 1) / 2);
     }
   }
-  int peak_xy_candidate[4] = {300, 800, 1300, 1800};
+  int interval = worldSize / 6;
+  int peak_xy_candidate[4] = {interval, interval * 2, interval * 3, interval * 4};
   vector<tuple<int, int>> points; // len:1024
-  for (int i = 0; i < 32; ++i) {
+  for (int i = 0; i < 32; ++i) { // 32 partitions because of maximum 32 ALP
     int peak_x_idx, peak_y_idx;
     peak_x_idx = (i >> 1) & 0b0011;
     peak_y_idx = i >> 3;
-    for (int j = 0; j < 32; ++j) {
+    for (int j = 0; j < numAgents / 32; ++j) { // agentNum/32 points per partition
 
       int peak_x = peak_xy_candidate[peak_x_idx];
       int peak_y = peak_xy_candidate[peak_y_idx];
