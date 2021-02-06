@@ -117,8 +117,10 @@ add_library(PDESMAS SHARED
 
 add_executable(runtest src/testing/TestAgent.cpp src/testing/run.cpp)
 add_executable(tileworld src/testing/Tileworld/TileWorldAgent.cpp src/testing/Tileworld/run.cpp)
+add_executable(tileworld_trace src/testing/TileworldTrace/TileWorldTraceAgent.cpp src/testing/TileworldTrace/run.cpp)
 add_executable(naivemb src/testing/NaiveMailbox/NaiveAgent.cpp src/testing/NaiveMailbox/run.cpp)
 
 target_link_libraries(runtest PDESMAS)
 target_link_libraries(tileworld PDESMAS)
 target_link_libraries(naivemb PDESMAS)
+target_link_libraries(tileworld_trace PDESMAS)
